@@ -7,6 +7,6 @@ docker container inspect renewedtab > /dev/null 2>&1 && echo "exists: remove con
 echo "##### Remove image #####"
 docker image inspect zebrajaeger/renewedtab:arm64-0.0.1-SNAPSHOT > /dev/null 2>&1 && echo "exists: remove image" && docker image rm zebrajaeger/renewedtab:arm64-0.0.1-SNAPSHOT
 echo "#####Load image #####"
-docker image load -i  ph5-arm64-0.0.1-SNAPSHOT.tar
+docker image load -i  renewedtab-arm64-0.0.1-SNAPSHOT.tar
 echo "##### Start stack #####"
 docker compose up -d

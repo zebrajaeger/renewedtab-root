@@ -1,5 +1,5 @@
 services:
-  ph5:
+  renewedtab:
     image: zebrajaeger/renewedtab:amd64-0.0.1-SNAPSHOT
     container_name: renewedtab
     restart: unless-stopped
