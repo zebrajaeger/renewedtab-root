@@ -1,0 +1,11 @@
+services:
+  ph5:
+    image: zebrajaeger/renewedtab:amd64-0.0.1-SNAPSHOT
+    container_name: renewedtab
+    restart: unless-stopped
+    ports:
+      - 8255:8255
+    expose:
+      - 8255
+    volumes:
+      - ~/data:/application/data

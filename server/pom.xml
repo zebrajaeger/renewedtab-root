@@ -9,9 +9,9 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>renewedtab-as-server-dashboard-server</artifactId>
+    <artifactId>renwedtab-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>renewedtab-as-server-dashboard-server</name>
+    <name>renewedtab-server</name>
     <description>Demo project for Spring Boot</description>
 
     <url/>
@@ -31,6 +31,8 @@
     <properties>
         <java.version>21</java.version>
         <spring-boot.version>3.3.3</spring-boot.version>
+        <docker.image.arm64>./target/renewedtab-arm64-${project.version}.tar</docker.image.arm64>
+        <docker.image.amd64>./target/renewedtab-amd64-${project.version}.tar</docker.image.amd64>
     </properties>
 
     <dependencies>
@@ -79,11 +81,27 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.txt</include>
+                    <include>**/*.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
+            <!-- layered jar-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -91,15 +109,96 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <verbose>true</verbose>
+                    <excludeProperties>
+                        <excludeProperty>git.build.user.*</excludeProperty>
+                        <excludeProperty>git.commit.user.*</excludeProperty>
+                    </excludeProperties>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+
+                    <execution>
+                        <id>docker-build-arm64</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>-f=docker-deployment/Dockerfile</argument>
+                                <argument>--platform=linux/arm64</argument>
+                                <argument>-t=zebrajaeger/renewedtab:arm64-${project.version}</argument>
+                                <argument>--output</argument>
+                                <argument>type=docker,dest=${docker.image.arm64}</argument>
+                                <argument>.</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>docker-build-amd64</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>-f=docker-deployment/Dockerfile</argument>
+                                <argument>--platform=linux/amd64</argument>
+                                <argument>-t=zebrajaeger/renewedtab:amd64-${project.version}</argument>
+                                <argument>--output</argument>
+                                <argument>type=docker,dest=${docker.image.amd64}</argument>
+                                <argument>.</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
