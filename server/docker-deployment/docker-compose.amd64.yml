@@ -8,4 +8,4 @@ services:
     expose:
       - 8255
     volumes:
-      - ~/data:/application/data
+      - ./data:/application/data
